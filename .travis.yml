@@ -10,7 +10,6 @@ env:
 branches:
   only:
     - next-dev
-    - chore-travis-flow
 
 before_install:
   - pip install awscli
