@@ -16,10 +16,10 @@ before_install:
   - pip install awscli
 
 script:
-  - print("script...")
+  - echo "script..."
 
 after_success:
-  - print("after_success...")
+  - echo "after_success..."
 
 before_deploy:
   - docker build -t guanyu-product-web -f ./web/Dockerfile .
