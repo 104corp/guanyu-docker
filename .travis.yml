@@ -13,21 +13,31 @@ branches:
 
 before_install:
   - pip install awscli
+
+script:
+  - echo "script..."
+
+after_success:
+  - echo "after_success..."
+
+before_deploy:
   - docker build -t guanyu-product-web -f ./web/Dockerfile .
   - docker build -t guanyu-product-fetch -f ./fetch/Dockerfile .
   - docker build -t guanyu-product-sophosav -f ./sophosav/Dockerfile .
-
-script:
   - $(aws ecr get-login --no-include-email --region ap-northeast-1)
   - docker tag guanyu-product-web:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA
   - docker tag guanyu-product-fetch:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-fetch:$SHA
   - docker tag guanyu-product-sophosav:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-sophosav:$SHA
-  - docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA
-  - docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-fetch:$SHA
-  - docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-sophosav:$SHA
+  - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA" >> deploy.sh
+  - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-fetch:$SHA" >> deploy.sh
+  - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-sophosav:$SHA" >> deploy.sh  
+  - echo "sed -ri "s/WebImageTag-SHA/$SHA/" ./_cfn/config.json" >> deploy.sh
+  - echo "sed -ri "s/FetchImageTag-SHA/$SHA/" ./_cfn/config.json" >> deploy.sh
+  - echo "sed -ri "s/SophosavImageTag-SHA/$SHA/" ./_cfn/config.json" >> deploy.sh
+  - echo "aws cloudformation update-stack --stack-name GuanyuPromoteTestStack --use-previous-template --capabilities CAPABILITY_IAM --parameters file://./_cfn/config.json" >> deploy.sh
 
-after_success:
-  - sed -ri "s/WebImageTag-SHA/$SHA/" ./_cfn/config.json
-  - sed -ri "s/FetchImageTag-SHA/$SHA/" ./_cfn/config.json
-  - sed -ri "s/SophosavImageTag-SHA/$SHA/" ./_cfn/config.json
-  - aws cloudformation update-stack --stack-name GuanyuPromoteTestStack --use-previous-template --capabilities CAPABILITY_IAM --parameters file://./_cfn/config.json
+deploy:
+  provider: script
+  script: deploy.sh
+  on:
+    branch: next-dev
