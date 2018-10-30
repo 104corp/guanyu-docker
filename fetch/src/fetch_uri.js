@@ -1,12 +1,12 @@
 const extend = require('extend');
-const gc = require('guanyu-core')
+const { aws, config, cache, prepareLogger } = require('guanyu-core');
+const crypto = require('crypto');
 const request = require('request');
 const tmp = require('tmp');
-const config = gc.config
 const logFn = 'fetch:src/fetch_uri'
-const plogger = gc.prepareLogger
-const s3 = new gc.aws.S3();
-const sqs = new gc.aws.SQS()
+const plogger = prepareLogger;
+const s3 = new aws.S3();
+const sqs = new aws.SQS();
 
 const file_max_size = config.get('MAX_SIZE');
 const bucketName = config.get('STACK:SAMPLE_BUCKET');
@@ -93,8 +93,12 @@ function _fetch_uri(payload) {
 			let fetched_size = 0;
 			let res = request({ url: payload.resource });
 
+
+  			let shasum = crypto.createHash('sha256');
+
 			res
 				.on('data', (data) => {
+					shasum.update(data)
 					fetched_size += data.length;
 					if (fetched_size > file_max_size) {
 						res.abort();
@@ -105,6 +109,7 @@ function _fetch_uri(payload) {
 						});
 
 						payload.deletefile = true;
+						payload.filename = name;
 
 						return reject(payload)
 					}
@@ -116,9 +121,10 @@ function _fetch_uri(payload) {
 						ACL: "public-read"
 					  })
 				)
-				.on('finish', () => {
+				.on('uploaded', () => {
 					payload.filename = name;
 					logger.debug(`Saved to S3 ${payload.filename}`);
+					payload.filehash = shasum.digest('base64');
 					fulfill(payload);
 				})
 				.on('error', (err) => {
@@ -135,6 +141,32 @@ function _fetch_uri(payload) {
 }
 
 
+/**
+ *
+ * @param payload
+ * @returns {Promise}
+ */
+function file_cache(payload) {
+	const logger = plogger({ loc: `${logFn}:file_cache` })
+	if (!payload.filehash) {
+		logger.info(`Skip get DDB cache for !filehash`);
+		return Promise.resolve(payload);
+	}
+
+	let file_payload = {};
+	file_payload.hash = payload.filehash;
+	
+	return cache.get_result(file_payload).then((cache_data) => {
+		if (cache_data.result) {
+			logger.info(`Find cache from file hash: ${payload.filehash}`);
+			payload.malicious = cache_data.malicious;
+			payload.result = cache_data.result;
+			delete payload.filehash;
+		}
+
+		return Promise.resolve(payload);
+	})
+}
 
 /**
  *
@@ -206,6 +238,26 @@ function delete_file(payload) {
 }
 
 
+
+/**
+ *
+ * @param payload
+ * @returns {Promise}
+ */
+function update_result(payload) {
+	const logger = plogger({ loc: `${logFn}:update_result` })
+
+	if (payload.result || !payload.filename) {
+		logger.info(`Update result to DB`);
+		delete payload.cache;
+		delete payload.filename;
+		return cache.update_result_ddb(payload);
+	}
+
+	return Promise.resolve(payload);
+}
+
+
 /**
  *
  * @param payload
@@ -213,7 +265,9 @@ function delete_file(payload) {
  */
 function fetch_uri_and_upload(payload) {
 	return fetch_uri(payload)
+		.then(file_cache)
 		.then(delete_file)
+		.then(update_result)
 		.then(sendScanQueue)
 }
 

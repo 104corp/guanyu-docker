@@ -215,6 +215,35 @@ function delete_file(payload) {
 
 
 /**
+ *
+ * @param payload
+ * @returns {Promise}
+ */
+function update_result(payload) {
+	const logger = plogger({ loc: `${logFn}:update_result` })
+
+	if (payload.filehash) {
+		logger.info(`Update url and file result to DB`);
+		let file_hash = payload.filehash;
+		delete payload.resource;
+		delete payload.filehash;
+
+		let file_payload = {};
+		extend(file_payload, payload);
+		file_payload.hash = file_hash;
+
+		return cache.update_result_ddb(payload)
+				.then(cache.update_result_ddb(file_payload))
+	} 
+
+
+	logger.info(`Update result to DB`);
+
+	return cache.update_result_ddb(payload);
+}
+
+
+/**
  * Scan a local file
  *
  * @param payload
@@ -227,7 +256,7 @@ function scan_file(payload) {
 		.then(call_sav_scan)
 		.then(delete_file_in_S3)
 		.then(delete_file)
-		.then(cache.update_result_ddb)
+		.then(update_result)
 }
 
 module.exports = {
