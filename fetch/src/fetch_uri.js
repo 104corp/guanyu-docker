@@ -109,6 +109,7 @@ function _fetch_uri(payload) {
 						});
 
 						payload.deletefile = true;
+						payload.filename = name;
 
 						return reject(payload)
 					}
