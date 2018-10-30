@@ -1,5 +1,6 @@
 const { cache, prepareLogger } = require('guanyu-core');
 const httperror = require('./httperror');
+const extend = require('extend');
 const logFn = "web:src/polling";
 
 function polling(payload) {
@@ -7,6 +8,7 @@ function polling(payload) {
   let time = [0, 1];
   let pullID;
   let timerID;
+  let options = payload.options;
 
   if (payload.result) {
     return Promise.resolve(payload);
@@ -25,6 +27,7 @@ function polling(payload) {
         if (payload.noncached) {
           delete payload.cached;
           delete payload.noncached;
+          extend(payload, { options: options });
         }
         cache.update_result_naive(payload).then(() => {
           if (payload.status) {
@@ -47,7 +50,7 @@ function polling(payload) {
 
   function startInterval() {
     pullID = setInterval(() => {
-      cache.get_result_ddb(payload).then(checkResult());
+      cache.get_result_ddb(payload).then(checkResult);
     }, getIntervalTime() * 1000);
   }
 
