@@ -232,14 +232,14 @@ function update_result(payload) {
 		extend(file_payload, payload);
 		file_payload.hash = file_hash;
 
-		return cache.update_result_ddb(payload)
-				.then(cache.update_result_ddb(file_payload))
+		return cache.update_result(payload)
+				.then(cache.update_result(file_payload))
 	} 
 
 
 	logger.info(`Update result to DB`);
 
-	return cache.update_result_ddb(payload);
+	return cache.update_result(payload);
 }
 
 
