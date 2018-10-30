@@ -1,5 +1,6 @@
 const extend = require('extend');
 const gc = require('guanyu-core')
+const crypto = require('crypto');
 const request = require('request');
 const tmp = require('tmp');
 const config = gc.config
@@ -93,8 +94,12 @@ function _fetch_uri(payload) {
 			let fetched_size = 0;
 			let res = request({ url: payload.resource });
 
+
+  			let shasum = crypto.createHash('sha256');
+
 			res
 				.on('data', (data) => {
+					shasum.update(data)
 					fetched_size += data.length;
 					if (fetched_size > file_max_size) {
 						res.abort();
@@ -116,9 +121,10 @@ function _fetch_uri(payload) {
 						ACL: "public-read"
 					  })
 				)
-				.on('finish', () => {
+				.on('uploaded', () => {
 					payload.filename = name;
 					logger.debug(`Saved to S3 ${payload.filename}`);
+					payload.filehash = shasum.digest('base64');
 					fulfill(payload);
 				})
 				.on('error', (err) => {
