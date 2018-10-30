@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "nodemon app.js",
-    "prestart": "/opt/sophos-av/bin/savdctl start || echo '** Running without Sophos-AV'",
     "start": "node app.js",
     "cov": "node_modules/.bin/istanbul cover --dir ./build/coverage node_modules/.bin/_mocha -- -R spec --recursive && [ -x `which open` ] && open build/coverage/lcov-report/index.html"
   },
