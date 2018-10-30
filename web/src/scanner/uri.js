@@ -7,6 +7,7 @@ const logFn = "web:src/scanner/url";
 const { config, cache, prepareLogger, queue } = require('guanyu-core');
 const hash = require("../hash");
 const { polling } = require("../polling");
+const { addPayloadAttribute } = require("file");
 
 const host_whitelist = [
   '104.com.tw',
@@ -76,7 +77,7 @@ function send_fetch_request(payload) {
 
   return queue.send_message(extend({}, payload, {
     queue_url: config.get('PLUGIN:FETCH:QUEUE')
-  }));
+  })).then(addPayloadAttribute);
 }
 
 /**

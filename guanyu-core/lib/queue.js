@@ -33,9 +33,7 @@ function send_message(payload) {
   }
 
   logger.debug(`Try send message to "${queue_url}"`);
-  extend(payload, {
-    noncached: true
-  });
+
   return sqs.sendMessage({
     MessageBody: JSON.stringify(payload),
     QueueUrl: queue_url
