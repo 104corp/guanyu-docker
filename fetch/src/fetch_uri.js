@@ -155,9 +155,10 @@ function file_cache(payload) {
 
 	let file_payload = {};
 	file_payload.hash = payload.filehash;
+	file_payload.options = payload.options;
 	
 	return cache.get_result(file_payload).then((cache_data) => {
-		if (cache_data.result) {
+		if (cache_data.result && cache_data.malicious) {
 			logger.info(`Find cache from file hash: ${payload.filehash}`);
 			payload.malicious = cache_data.malicious;
 			payload.result = cache_data.result;
@@ -251,7 +252,7 @@ function update_result(payload) {
 		logger.info(`Update result to DB`);
 		delete payload.cache;
 		delete payload.filename;
-		return cache.update_result_ddb(payload);
+		return cache.update_result(payload);
 	}
 
 	return Promise.resolve(payload);
