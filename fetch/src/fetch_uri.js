@@ -237,6 +237,26 @@ function delete_file(payload) {
 }
 
 
+
+/**
+ *
+ * @param payload
+ * @returns {Promise}
+ */
+function update_result(payload) {
+	const logger = plogger({ loc: `${logFn}:update_result` })
+
+	if (payload.result || !payload.filename) {
+		logger.info(`Update result to DB`);
+		delete payload.cache;
+		delete payload.filename;
+		return cache.update_result_ddb(payload);
+	}
+
+	return Promise.resolve(payload);
+}
+
+
 /**
  *
  * @param payload
@@ -246,6 +266,7 @@ function fetch_uri_and_upload(payload) {
 	return fetch_uri(payload)
 		.then(file_cache)
 		.then(delete_file)
+		.then(update_result)
 		.then(sendScanQueue)
 }
 
