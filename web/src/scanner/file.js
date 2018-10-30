@@ -82,6 +82,12 @@ function delete_file(payload) {
   return Promise.reject(payload);
 }
 
+function addPayloadAttribute(payload) {
+  return Promise.resolve(extend(payload, {
+    noncached: true
+  }));
+}
+
 /**
  * Scan a local file
  *
@@ -94,6 +100,7 @@ function scan_file(filename, options) {
     .then(cache.get_result)
     .then(upload_file)
     .then(queue.send_message)
+    .then(addPayloadAttribute)
     .catch(delete_file)
     .then(cache.update_result)
     .then(polling);
@@ -101,4 +108,5 @@ function scan_file(filename, options) {
 
 module.exports = {
   scan_file: scan_file,
+  addPayloadAttribute: addPayloadAttribute
 };
