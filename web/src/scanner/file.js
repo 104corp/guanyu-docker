@@ -83,9 +83,13 @@ function delete_file(payload) {
 }
 
 function addPayloadAttribute(payload) {
-  return Promise.resolve(extend(payload, {
-    noncached: true
-  }));
+  if (payload.result === undefined && payload.cached === undefined) {
+    extend(payload, {
+      noncached: true
+    });
+  }
+
+  return Promise.resolve(payload);
 }
 
 /**

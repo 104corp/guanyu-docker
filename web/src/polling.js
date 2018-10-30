@@ -25,11 +25,11 @@ function polling(payload) {
       if (payload.status || payload.result) {
         end();
         logger.debug("Polling stop");
-        if (noncached) {
-          delete payload.cached;
-          extend(payload, { options: options });
-        }
         cache.update_result_naive(payload).then(() => {
+          if (noncached) {
+            delete payload.cached;
+            extend(payload, { options: options });
+          }
           if (payload.status) {
             return this.reject(payload);
           }
