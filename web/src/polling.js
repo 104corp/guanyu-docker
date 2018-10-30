@@ -9,6 +9,7 @@ function polling(payload) {
   let pullID;
   let timerID;
   let options = payload.options;
+  let noncached = payload.noncached;
 
   if (payload.result) {
     return Promise.resolve(payload);
@@ -24,9 +25,8 @@ function polling(payload) {
       if (payload.status || payload.result) {
         end();
         logger.debug("Polling stop");
-        if (payload.noncached) {
+        if (noncached) {
           delete payload.cached;
-          delete payload.noncached;
           extend(payload, { options: options });
         }
         cache.update_result_naive(payload).then(() => {
@@ -50,7 +50,7 @@ function polling(payload) {
 
   function startInterval() {
     pullID = setInterval(() => {
-      cache.get_result_ddb(payload).then(checkResult);
+      cache.get_result_ddb(payload).then(checkResult());
     }, getIntervalTime() * 1000);
   }
 
