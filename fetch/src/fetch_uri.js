@@ -158,7 +158,7 @@ function file_cache(payload) {
 	file_payload.options = payload.options;
 	
 	return cache.get_result(file_payload).then((cache_data) => {
-		if (cache_data.result && cache_data.malicious) {
+		if (cache_data.result !== undefined && cache_data.malicious !== undefined) {
 			logger.info(`Find cache from file hash: ${payload.filehash}`);
 			payload.malicious = cache_data.malicious;
 			payload.result = cache_data.result;
