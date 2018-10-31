@@ -145,13 +145,13 @@ function get_file_with_S3(payload) {
 		Bucket: bucketName,
 		Key: payload.filename
 	};
-	logger.info(`Bucket name is ${bucketName}`)
+	logger.debug(`Bucket name is ${bucketName}`)
 	let file = fs.createWriteStream(payload.filename);
 
 	return new Promise((resolve, reject) => {
 		s3.getObject(params).createReadStream()
 		.on('end', () => {
-			logger.info(`get ${payload.filename} in ${bucketName}`);
+			logger.debug(`Get ${payload.filename} in ${bucketName}`);
 
 			return resolve(payload)
 		})
@@ -171,7 +171,7 @@ function get_file_with_S3(payload) {
  * @returns {Promise}
  */
 function delete_file_in_S3(payload) {
-	const logger = plogger({ loc: `${logFn}:get_file_with_S3` });
+	const logger = plogger({ loc: `${logFn}:delete_file_in_S3` });
 	logger.debug(`Deleting "${payload.filename}" in S3 bucket`);
 
 	let params = {
@@ -199,7 +199,7 @@ function delete_file_in_S3(payload) {
  * @returns {Promise}
  */
 function delete_file(payload) {
-	const logger = plogger({ loc: `${logFn}:get_file_with_S3` });
+	const logger = plogger({ loc: `${logFn}:delete_file` });
 	logger.debug(`Deleting "${payload.filename}"`);
 
 	try {
