@@ -50,7 +50,7 @@ function fetch_uri(payload) {
  * @private
  */
 function _fetch_uri(payload) {
-	const logger = plogger({ loc: `${logFn}:fetch_uri` })
+	const logger = plogger({ loc: `${logFn}:_fetch_uri` })
 
 	if (!/^https?:\/\/.+/.test(payload.resource)) {
 		logger.warn(`Unsupported uri: ${payload.resource}`);
@@ -209,14 +209,12 @@ function sendScanQueue(payload) {
  * @returns {Promise}
  */
 function delete_file(payload) {
-	const logger = plogger({ loc: `${logFn}:_delete_file` })
+	const logger = plogger({ loc: `${logFn}:delete_file` })
 	
 	if(!payload.deletefile){
-		logger.info(`Skip delete file in S3 for !deletefile`);
+		logger.debug(`Skip delete file in S3 for !deletefile`);
 		return Promise.resolve(payload); 
 	}
-
-	logger.info(`Resource too large, delete the fetch file in S3`)
 
 	let params = {
 		Bucket: bucketName,

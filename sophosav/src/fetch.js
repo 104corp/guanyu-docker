@@ -23,7 +23,7 @@ function parseMessageSync(awsData) {
   const logger = plogger({loc: `${logFn}:parsePayload`})
 
   if (!awsData.Messages) {  // No data
-    logger.info(`empty queue`)
+    logger.debug(`empty queue`)
     return {}
   }
 
@@ -49,7 +49,7 @@ function processMessage(payload) {
   const logger = plogger({loc: `${logFn}:processMessage`})
 
   if (!payload.body) {  // No resource
-    logger.info(`queue message is empty`)
+    logger.debug(`queue message is empty`)
     return {}
   }
 
@@ -62,7 +62,7 @@ function deleteMessage(payload) {
   const logger = plogger({loc: `${logFn}:deleteMessage`})
 
   if (!payload.handle) {
-    logger.info(`skipping ${payload.awsMsgId} for deleteion for handle missing`)
+    logger.debug(`skipping ${payload.awsMsgId} for deleteion for handle missing`)
     return payload
   }
 
