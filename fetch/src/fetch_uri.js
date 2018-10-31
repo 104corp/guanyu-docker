@@ -251,6 +251,7 @@ function update_result(payload) {
 		logger.info(`Update result to DB`);
 		delete payload.cache;
 		delete payload.filename;
+		delete payload.options;
 		return cache.update_result(payload);
 	}
 

@@ -222,6 +222,8 @@ function delete_file(payload) {
 function update_result(payload) {
 	const logger = plogger({ loc: `${logFn}:update_result` })
 
+	delete payload.options;
+	
 	if (payload.filehash) {
 		logger.info(`Update url and file result to DB`);
 		let file_hash = payload.filehash;
