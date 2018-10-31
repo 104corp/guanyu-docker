@@ -162,6 +162,7 @@ function file_cache(payload) {
 			logger.info(`Find cache from file hash: ${payload.filehash}`);
 			payload.malicious = cache_data.malicious;
 			payload.result = cache_data.result;
+			payload.deletefile = true; 
 			delete payload.filehash;
 		}
 
@@ -250,6 +251,7 @@ function update_result(payload) {
 		logger.info(`Update result to DB`);
 		delete payload.cache;
 		delete payload.filename;
+		delete payload.options;
 		return cache.update_result(payload);
 	}
 
