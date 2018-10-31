@@ -227,12 +227,12 @@ function update_result(payload) {
 	if (payload.filehash) {
 		logger.info(`Update url and file result to DB`);
 		let file_hash = payload.filehash;
-		delete payload.resource;
 		delete payload.filehash;
 
 		let file_payload = {};
 		extend(file_payload, payload);
 		file_payload.hash = file_hash;
+		delete file_payload.resource;
 
 		return cache.update_result(payload)
 				.then(cache.update_result(file_payload))
