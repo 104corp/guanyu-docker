@@ -28,7 +28,7 @@ before_deploy:
   - docker tag guanyu-product-web:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA
   - docker tag guanyu-product-fetch:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-fetch:$SHA
   - docker tag guanyu-product-sophosav:latest 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-sophosav:$SHA
-  - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA" >> /tmp/deploy.sh
+  - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-web:$SHA" > /tmp/deploy.sh
   - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-fetch:$SHA" >> /tmp/deploy.sh
   - echo "docker push 408772917132.dkr.ecr.ap-northeast-1.amazonaws.com/guanyu-sophosav:$SHA" >> /tmp/deploy.sh  
   - echo "sed -ri "s/WebImageTag-SHA/$SHA/" ./_cfn/config.json" >> /tmp/deploy.sh
