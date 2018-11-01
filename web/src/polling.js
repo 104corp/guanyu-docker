@@ -15,6 +15,19 @@ function polling(payload) {
     return Promise.resolve(payload);
   }
 
+  function bypass_cache(payload) {
+    if (payload.options) {
+      if (payload.options.bypass_cache || payload.options.bypass_read_cache) {
+        logger.debug(`Skip cache lookup as requested "${payload.hash}"`)
+        delete payload.result;
+        cache.update_result_ddb(payload);
+        return Promise.resolve(payload)
+      }
+    }
+    return Promise.resolve(payload)
+  }
+  
+
   function end() {
     pullID = pullID && clearInterval(pullID);
     timerID = timerID && clearTimeout(timerID);
@@ -73,7 +86,7 @@ function polling(payload) {
       logger.debug("Polling timeout");
       reject(httperror.GATEWAY_TIMEOUT);
     }, (payload.responseTime || 60) * 1000);
-    startInterval();
+    bypass_cache(payload).then(startInterval)
   });
 }
 
