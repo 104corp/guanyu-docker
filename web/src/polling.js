@@ -18,7 +18,7 @@ function polling(payload) {
   function bypass_cache(payload) {
     if (payload.options) {
       if (payload.options.bypass_cache || payload.options.bypass_read_cache) {
-        logger.debug(`Skip cache lookup as requested "${payload.hash}"`)
+        logger.debug(`Reset result lookup as requested "${payload.hash}"`)
         delete payload.result;
         cache.update_result_ddb(payload);
         return Promise.resolve(payload)
