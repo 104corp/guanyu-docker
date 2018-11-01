@@ -8,11 +8,7 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "extend": "^3.0.1",
-    "guanyu-core": "file:../guanyu-core",
-    "request": "^2.81.0",
-    "s3-upload-stream": "^1.0.7",
-    "tmp": "0.0.33"
+    "guanyu-core": "file:../guanyu-core"
   },
   "devDependencies": {
     "nodemon": "^1.18.4",

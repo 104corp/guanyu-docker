@@ -1,18 +1,13 @@
 'use strict';
 
 const extend = require('extend');
-const fs = require('fs');
-const request = require('request');
-const tmp = require('tmp');
 const url = require('url');
 
-const config = require('../../config');
-const file_scanner = require('./file.js');
-const logger = require('../logger');
-const mycache = require('../cache');
-const myhash = require("../hash");
-
-const maxSize = config.get('MAX_SIZE');
+const logFn = "web:src/scanner/url";
+const { config, cache, prepareLogger, queue } = require('guanyu-core');
+const hash = require("../hash");
+const { polling } = require("../polling");
+const { addPayloadAttribute } = require("./file");
 
 const host_whitelist = [
   '104.com.tw',
@@ -41,6 +36,7 @@ const host_whitelist = [
 
 
 function shortcut_host_whitelist(payload) {
+  const logger = prepareLogger({ loc: `${logFn}:shortcutHostWhitelist` });
   let uri = url.parse(payload.resource);
 
   if (!uri.host) {
@@ -66,116 +62,22 @@ function shortcut_host_whitelist(payload) {
   return Promise.resolve(payload);
 }
 
-/**
- * Wraps _fetch_uri and handle fall_with_upstream
- *
- * @param payload
- * @returns {Promise}
- */
-function fetch_uri(payload) {
-  let fall_with_upstream = payload.options && payload.options.fall_with_upstream;
+function send_fetch_request(payload) {
+  const logger = prepareLogger({ loc: `${logFn}:sendQueue` });
 
-  if (fall_with_upstream)
-    return _fetch_uri(payload);
-
-  return _fetch_uri(payload).catch(function (payload) {
-    extend(payload, {
-      malicious: false,
-      result: `#${payload.message}`,
-    });
-
-    delete payload.error;
-    delete payload.status;
-    delete payload.message;
-
-    return Promise.resolve(payload);
-  });
-}
-
-/**
- *
- * @param payload
- * @returns {Promise}
- * @private
- */
-function _fetch_uri(payload) {
   if (payload.result) {
     logger.debug("Skip fetching uri for result already known");
     return Promise.resolve(payload);
   }
 
-  if (!/^https?:\/\/.+/.test(payload.resource)) {
-    logger.warn(`Unsupported uri: ${payload.resource}`);
-    return Promise.reject(extend({}, payload, {
-      status: 400,
-      message: `Unsupported uri: ${payload.resource}`
-    }));
+  if (payload.cache) {
+    logger.debug("Skip fetching uri for sophosav scanning");
+    return Promise.resolve(payload);
   }
 
-  return new Promise((fulfill, reject) => {
-    let name = tmp.tmpNameSync({template: '/tmp/guanyu-XXXXXXXX'});
-    logger.debug(`Fetching "${payload.resource}" to "${name}"`);
-
-    request({method: "HEAD", url: payload.resource}, (err, headRes) => {
-      if (err)
-        return reject(extend(payload, {
-          status: 500,
-          error: err,
-        }));
-
-      // Catches upstream 4XX
-      if (Math.floor(headRes.statusCode / 100) == 4) {
-        return reject(extend(payload, {
-          status: 400,
-          message: "Upstream failed: " + headRes.statusMessage,
-        }))
-      }
-
-      let size = headRes.headers['content-length'];
-      if (size > maxSize) {
-        return reject(extend(payload, {
-          status: 413,
-          message: "Resource too large",
-          result: new Error(`Resource size "${size}" exceeds limit "${maxSize}"`)
-        }));
-      }
-      
-      let fetched_size = 0;
-      let res = request({url: payload.resource});
-
-      res
-        .on('data', (data) => {
-          fetched_size += data.length;
-          if (fetched_size > maxSize) {
-            sem.leave();
-            res.abort();
-            fs.unlink(name);
-            payload = extend(payload, {
-              status: 413,
-              message: "Resource too large",
-              error: new Error(`Fetched size "${fetched_size}" exceeds limit "${maxSize}"`)
-            });
-            return reject(payload)
-          }
-        })
-        .pipe(fs.createWriteStream(name))
-        .on('finish', () => {
-          sem.leave();
-          payload.filename = name;
-          logger.debug(`Saved locally ${payload.filename}`);
-          fulfill(payload);
-        })
-        .on('error', (err) => {
-          // Fetch failed
-          sem.leave();
-          reject(extend(payload, {
-            status: "400",
-            message: "fetch failed",
-            error: err,
-          }));
-        });
-    })
-  })
+  return queue.send_message(extend({}, payload, {
+    queue_url: config.get('PLUGIN:FETCH:QUEUE')
+  })).then(addPayloadAttribute);
 }
 
 /**
@@ -184,12 +86,12 @@ function _fetch_uri(payload) {
  * @returns {*}
  */
 function scan_uri(uri, options) {
-  return myhash.from_string(uri, options)
+  return hash.from_string(uri, options)
     .then(shortcut_host_whitelist)
-    .then(mycache.get_result)
-    .then(fetch_uri)
-    .then(file_scanner.call_sav_scan)
-    .then(mycache.update_result);
+    .then(cache.get_result)
+    .then(send_fetch_request)
+    .then(cache.update_result)
+    .then(polling);
 }
 
 module.exports = {

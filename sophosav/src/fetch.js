@@ -1,16 +1,13 @@
 const extend = require('extend');
 const gc = require('guanyu-core')
-const request = require('request');
-const tmp = require('tmp');
-const fetchUri = require('./fetch_uri');
-
+const scan = require('./scan');
 const config = gc.config
-const logFn = 'fetch:src/fetch'
+const logFn = 'sophosav:src/fetch'
 const plogger = gc.prepareLogger
 const sqs = new gc.aws.SQS()
 
 const sqsParams = Object.freeze({
-  QueueUrl: config.get('PLUGIN:FETCH:QUEUE'),
+  QueueUrl: config.get('PLUGIN:SOPHOSAV:QUEUE'),
   WaitTimeSeconds: config.get('PLUGIN:FETCH:WAIT_SECONDS'),
 })
 
@@ -55,8 +52,8 @@ function processMessage(payload) {
     logger.debug(`queue message is empty`)
     return {}
   }
-  
-  return fetchUri.fetch_uri_and_upload(payload.body).then(function(value){
+
+  return scan.scan_file(payload.body).then(function(value){
     return extend(payload, value);
   });
 }
@@ -70,7 +67,7 @@ function deleteMessage(payload) {
   }
 
   let params = {
-    QueueUrl: config.get('PLUGIN:FETCH:QUEUE'),
+    QueueUrl: config.get('PLUGIN:SOPHOSAV:QUEUE'),
     ReceiptHandle: payload.handle,
   }
 

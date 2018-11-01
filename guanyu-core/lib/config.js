@@ -6,19 +6,20 @@ nconf.use('memory')
   .overrides({
     PLUGIN: {
       FETCH: {
-        QUEUE: 'https://sqs.us-west-2.amazonaws.com/328286347281/guanyu-PluginFetchQueue-17377Z28CPFQ8',
+        QUEUE: 'https://sqs.ap-northeast-1.amazonaws.com/408772917132/Fetch',
       },
       REKOGNITION: {
         QUEUE: 'https://sqs.us-west-2.amazonaws.com/328286347281/guanyu-PluginRekognitionQueue-H3MNGDGANI4E',
       },
       SOPHOSAV: {
-        QUEUE: 'https://sqs.us-west-2.amazonaws.com/328286347281/guanyu-PluginSophosQueue-11UGLC8R2Z7Q5',
+        QUEUE: 'https://sqs.ap-northeast-1.amazonaws.com/408772917132/ScanFile',
       }
     },
     STACK: {
-      CACHE_TABLE: 'guanyu-CacheTable-Z07H35ELN8CC',
+      CACHE_TABLE_DISABLED: false,
+      CACHE_TABLE: 'GuanyuTestStack-CacheTable-1L2AUUAK226M4',
       SELF_ENDPOINT: 'http://localhost:3000/',
-      SAMPLE_BUCKET: 'guanyu-samplebucket-1ei8320uyuze3',
+      SAMPLE_BUCKET: 'guanyuteststack-scanfilebucket-h36l9zy4kw11',
     },
   })
   .env({
@@ -31,6 +32,7 @@ nconf.use('memory')
       'PLUGIN__FETCH__QUEUE',
       'PLUGIN__REKOGNITION__QUEUE',
       'PLUGIN__SOPHOSAV__QUEUE',
+      'CACHE_TABLE_DISABLED',
       'STACK__CACHE_TABLE',
       'STACK__SELF_ENDPOINT',
       'STACK__SAMPLE_BUCKET',
