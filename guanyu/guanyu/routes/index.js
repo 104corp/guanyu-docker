@@ -36,4 +36,19 @@ router.get('/healthcheck', (req, res) => {
   });
 });
 
+router.get('/version', (req, res) => {
+  var status = 200;
+  var response = {
+  };
+
+  file_scanner.check_savd_version().then((verinfo) => {
+    if (!verinfo) {
+      // savd down
+      status = 500;
+    }
+    response['msg'] = verinfo
+    res.status(status).send(response);
+  });
+});
+
 module.exports = router;

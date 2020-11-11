@@ -42,6 +42,20 @@ const check_savd_status = (() => {
   }
 })();
 
+const check_savd_version = (() => {
+  return () => {
+    var savdstatus = "ls -al /opt/sophos-av/update/savupdate.lock | cut -d' ' -f6,7,8";
+    return new Promise((fulfill) => {
+      exec(savdstatus, {timeout: 1000}, (err, stdout) => {
+        if (stdout) {
+          return fulfill(stdout);
+        }
+        fulfill('Error');
+      });
+    });
+  }
+})();
+
 function ensure_savd_running(payload) {
   return new Promise((fulfill, reject) => {
     check_savd_status().then((running) => {
