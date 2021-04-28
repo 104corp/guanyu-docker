@@ -1,7 +1,9 @@
 # Guanyu
 
-RESTful API wrapper for [Sohpos Antivirus for Linux Free](https://www.sophos.com/en-us/products/free-tools/sophos-antivirus-for-linux.aspx) 
+RESTful API wrapper for [Sohpos Antivirus for Linux Free](https://www.sophos.com/en-us/products/free-tools/sophos-antivirus-for-linux.aspx)
 on top of [maxipowa/sophos-av](https://github.com/maxpowa/sophos-av-docker).
+
+
 
 ## Install
 
@@ -9,17 +11,23 @@ on top of [maxipowa/sophos-av](https://github.com/maxpowa/sophos-av-docker).
 docker pull clifflu/guanyu
 ```
 
+
+
 ## Starting Guanyu
 
 ```
 docker run -d -p 3000:3000 clifflu/guanyu
 ```
 
+
+
 ## Using Guanyu
 
 ```
 curl -X POST -F "file=@/tmp/virus.exe" http://localhost:3000/scan/file"
 ```
+
+
 
 ## Environment Options
 
@@ -29,12 +37,14 @@ curl -X POST -F "file=@/tmp/virus.exe" http://localhost:3000/scan/file"
 * Format: characters separated by comma (,)
 * When enabled, POST requests must have request header `Api-Token` set with matching values to be authenticated.
 
+
+
 ### Cache
 
 #### AWS DynamoDB
 
 * Env name: `CACHE__DDB__HOST`
-* Format: table name 
+* Format: table name
 * Enables cache on AWS DynamoDB
 
 * Env name: `CACHE__DDB__DISABLED`,
@@ -57,11 +67,14 @@ docker run -d -p 3000:3000 --link guanyu-storage --env CACHE__REDIS__HOST=guanyu
 ```
 
 
+
 ### Drunk
 
 * Env name: `DRUNK`
 * Type: boolean (0/1 preferred)
-* Skip scanning and pretend all files to be clean, primarily for debugging. 
+* Skip scanning and pretend all files to be clean, primarily for debugging.
+
+
 
 ### File Max Size
 
@@ -70,11 +83,15 @@ docker run -d -p 3000:3000 --link guanyu-storage --env CACHE__REDIS__HOST=guanyu
 * Default: 33554432 (32mb)
 * Maximal size in bytes for file uploads and remote files.
 
+
+
 ### Log Level
 
 * Env name: `LOG_LEVEL`
 * Possible values: ['debug', 'verbose', 'info', 'warn']
 * Default: info
+
+
 
 ### Process per Core
 
@@ -84,10 +101,13 @@ docker run -d -p 3000:3000 --link guanyu-storage --env CACHE__REDIS__HOST=guanyu
 * Number of concurrent scans allowed per CPU core
 
 
+
 ## License
 
 MIT
 
+
+
 ## Note
 
-Guanyu is open-sourced under permission as a side project from [104 Corp.](https://www.104.com.tw/) 
+Guanyu is open-sourced under permission as a side project from [104 Corp.](https://www.104.com.tw/)
